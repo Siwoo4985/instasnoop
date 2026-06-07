@@ -1,0 +1,139 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tosca/
+.pytest_cache/
+.unittest_cache/
+.tox/
+.nosetests
+.gimlet/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.run/
+.idea/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Sphinx documentation
+doc/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+#   For a library or package, you might want to share your .python-version.
+#   For an app, this might be useful to exclude.
+# .python-version
+
+# pipenv
+#   According to pypa/pipenv#1263, we should not add Pipfile.lock to .gitignore.
+#   It should be committed alongside Pipfile.
+#Pipfile.lock
+
+# poetry
+#   Similar to Pipfile.lock, poetry.lock should be committed.
+#poetry.lock
+
+# pdm
+#   Similar to Pipfile.lock, pdm.lock should be committed.
+#pdm.lock
+
+# virtualenv
+.venv/
+venv/
+ENV/
+env/
+# virtualenvwrapper
+.venv_metadata/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype type checker
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# OSINT output reports
+reports/
+*.json
+*.html
+
+# Environment variables
+.env
+.env.*
