@@ -73,7 +73,8 @@ class CrossPlatformScanner:
                     not_found_keywords = [
                         "page not found", "user not found", "profile not found",
                         "isn't available", "doesn't exist", "cannot find", 
-                        "error-404", "404 not found", "404 - page not found"
+                        "error-404", "404 not found", "404 - page not found",
+                        "not found"
                     ]
                     
                     if any(kw in content for kw in not_found_keywords):
