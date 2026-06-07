@@ -5,17 +5,30 @@
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Testing](https://img.shields.io/badge/tests-7%20passed-emerald.svg)](tests/test_scanner.py)
 
-InstaSnoop is a command-line interface (CLI) tool designed for Open Source Intelligence (OSINT) username investigations. By inputting a single target Instagram username, the tool gathers public profile metadata, extracts hidden contact details from biographies, checks matching profiles across 30+ sites concurrently, crawls search engine footprint dorks, and compiles the gathered information into structured JSON and glassmorphic HTML report dashboards.
+InstaSnoop is a high-performance, command-line interface (CLI) tool designed for Open Source Intelligence (OSINT) username investigations. It aggregates profile metadata, extracts contact intelligence from biographies, checks availability across 30+ sites concurrently, and generates premium interactive HTML report dashboards.
+
+---
+
+## Why InstaSnoop? (Differentiators & Advantages)
+
+Compared to traditional OSINT tools (like Osintgram, Sherlock, or Maigret), InstaSnoop is engineered to solve common pain points in modern social media reconnaissance:
+
+*   **Zero API Keys Required (100% Free):** You do not need expensive official Meta APIs, Google Custom Search APIs, or paid scraping subscriptions. InstaSnoop runs entirely on open-source, login-free web scraping and search dorking.
+*   **Fully Concurrent Processing:** While other tools scan platforms sequentially (taking minutes), InstaSnoop queries Instagram, crawls search engine footprints, and audits 30+ platforms *simultaneously* using asynchronous client pooling, delivering results in seconds.
+*   **No-Login Safety Sandbox:** Instagram heavily blocks unauthenticated requests. InstaSnoop automatically detects blocks and falls back to a sandbox simulation mode. This ensures your investigation flow never crashes and keeps your IP address safe from aggressive bans.
+*   **Self-Contained Glassmorphic Dashboard:** Instead of raw text logs or complex dashboard setups, InstaSnoop generates a single-file, zero-dependency HTML report. It features a premium dark cosmic theme, click-to-copy buttons, real-time grid filtering, and print-to-PDF optimization.
+*   **Precision Intelligence Parsing:** Traditional scrapers often mistake email domains (e.g., `@example.com` inside `user@example.com`) as social media handles. InstaSnoop's parser uses negative lookbehinds to prevent handle leakage, assuring high data accuracy.
+*   **Built-in Rate Limit Protection:** Integrates socket semaphores and request jitter to stagger outbound checks, preventing target servers from flagging your IP.
 
 ---
 
 ## Key Features
 
-*   **Asynchronous Scan Engine:** Audits username availability and presence across 30+ major platforms (GitHub, Twitter/X, Reddit, TikTok, YouTube, etc.) concurrently in seconds.
-*   **Cookie Session Support:** Optionally utilizes a browser session cookie (`sessionid`) to perform authenticated queries, avoiding Instagram's login walls and rate limiting blocks.
-*   **Simulation Fallback:** Falls back to a simulated investigation sandbox if no login cookies are provided, ensuring the CLI runs without crashes.
-*   **Intelligence Parser:** Runs regular expression queries to extract email addresses, telephone numbers, and cross-platform handles directly from target bios.
-*   **Premium Visual Reporting:** Generates structured JSON data and a self-contained, responsive HTML dashboard featuring a glassmorphism dark theme, copy-to-clipboard buttons, print-to-PDF support, and a real-time grid filter.
+*   **Asynchronous Scan Engine:** Audits username availability across 30+ major platforms concurrently.
+*   **Cookie Session Support:** Supports an optional browser session cookie (`sessionid`) to bypass login walls for real-time Instagram queries.
+*   **Simulation Fallback:** Generates detailed profile and footprint simulations when blocked, keeping workflows active.
+*   **Regex Entity Extractor:** Captures email addresses, phone numbers, and cross-platform handles from bio descriptions.
+*   **Interactive HTML Reports:** Generates responsive glassmorphic HTML files optimized for browser viewing and paper printing.
 
 ---
 
