@@ -1,25 +1,25 @@
-# InstaSnoop 🕵️‍♂️
+# InstaSnoop
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
 [![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://python.org)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Testing](https://img.shields.io/badge/tests-7%20passed-emerald.svg)](tests/test_scanner.py)
 
-InstaSnoop is a premium, high-performance command-line interface (CLI) tool designed for Open Source Intelligence (OSINT) username investigations. It retrieves public Instagram profile metrics, parses biography content for hidden contact details, checks username footprints across 30+ sites concurrently, and generates stunning interactive reports.
+InstaSnoop is a command-line interface (CLI) tool designed for Open Source Intelligence (OSINT) username investigations. By inputting a single target Instagram username, the tool gathers public profile metadata, extracts hidden contact details from biographies, checks matching profiles across 30+ sites concurrently, crawls search engine footprint dorks, and compiles the gathered information into structured JSON and glassmorphic HTML report dashboards.
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
-*   **Asynchronous Scan Engine:** Audits username presence across **30+ major platforms** (GitHub, Twitter/X, Reddit, TikTok, YouTube, etc.) concurrently in seconds.
-*   **Cookie Session Support:** Optionally utilizes a browser `sessionid` cookie to perform authenticated queries, avoiding Instagram's aggressive login walls and IP blocks.
-*   **Simulation Fallback:** Gracefully falls back to a simulated investigation sandbox if no login cookies are provided, ensuring the CLI runs without crashes.
-*   **Intelligence Parser:** Runs advanced regex queries to extract email addresses, telephone numbers, and cross-platform handles directly from target bios.
-*   **Premium Visual Reporting:** Generates structured JSON data and a self-contained, responsive HTML dashboard featuring a **glassmorphism dark theme**, copy-to-clipboard buttons, print-to-PDF support, and a real-time grid filter.
+*   **Asynchronous Scan Engine:** Audits username availability and presence across 30+ major platforms (GitHub, Twitter/X, Reddit, TikTok, YouTube, etc.) concurrently in seconds.
+*   **Cookie Session Support:** Optionally utilizes a browser session cookie (`sessionid`) to perform authenticated queries, avoiding Instagram's login walls and rate limiting blocks.
+*   **Simulation Fallback:** Falls back to a simulated investigation sandbox if no login cookies are provided, ensuring the CLI runs without crashes.
+*   **Intelligence Parser:** Runs regular expression queries to extract email addresses, telephone numbers, and cross-platform handles directly from target bios.
+*   **Premium Visual Reporting:** Generates structured JSON data and a self-contained, responsive HTML dashboard featuring a glassmorphism dark theme, copy-to-clipboard buttons, print-to-PDF support, and a real-time grid filter.
 
 ---
 
-## 💻 Terminal Preview
+## Terminal Preview
 
 ```text
  ██████╗███╗   ██╗ ██████╗  ██████╗ ██████╗ 
@@ -32,14 +32,14 @@ InstaSnoop is a premium, high-performance command-line interface (CLI) tool desi
 [ InstaSnoop OSINT Tool v0.1.0 ]
 Investigate Instagram targets and discover digital footprints across 30+ sites.
 
-⡋ Scan complete!
+Scan complete!
 
 ╭─── Instagram Profile Details (Simulation Fallback) ───╮
 │   Full Name    Siwoo Park                             │
 │   Username     @siwoo                                 │
 │   Bio          Tech Enthusiast | OSINT Researcher     │
-│                📧 siwoo.park@example.com              │
-│                📱 +82 10-1234-5678                    │
+│                email: siwoo.park@example.com          │
+│                phone: +82 10-1234-5678                │
 │   Followers    1,240                                  │
 │   Following    450                                    │
 │   Privacy      Public                                 │
@@ -62,9 +62,9 @@ Investigate Instagram targets and discover digital footprints across 30+ sites.
 
 ---
 
-## 🛠️ Install
+## Install
 
-Ensure you have Python 3.10+ and the [uv](https://github.com/astral-sh/uv) package manager installed.
+Ensure you have Python 3.10+ and the uv package manager installed.
 
 ```bash
 # Clone the repository
@@ -79,7 +79,7 @@ uv pip install -e .
 
 ---
 
-## 📖 Usage
+## Usage
 
 ### Command Syntax
 ```bash
@@ -89,7 +89,7 @@ instasnoop [COMMAND] [ARGS] [OPTIONS]
 ### Options & Arguments
 | Argument/Option | Alias | Description | Default |
 | :--- | :--- | :--- | :--- |
-| `username` | *(Argument)* | The target Instagram handle to scan | *(Required)* |
+| `username` | (Argument) | The target Instagram handle to scan | (Required) |
 | `--cookie` | `-c` | Instagram login cookie string (`sessionid=...`) | `None` |
 | `--output-dir`| `-o` | Directory to save JSON and HTML reports | `reports` |
 
@@ -110,7 +110,7 @@ instasnoop version
 
 ---
 
-## 🔑 Session Cookie Retrieval
+## Session Cookie Retrieval
 
 Instagram restricts anonymous public profile queries. To get real-time info, supply an active session cookie:
 
@@ -125,7 +125,7 @@ Instagram restricts anonymous public profile queries. To get real-time info, sup
 
 ---
 
-## 📂 Project Architecture
+## Project Architecture
 
 ```
 instasnoop/
@@ -146,7 +146,7 @@ instasnoop/
 
 ---
 
-## 🧪 Tests
+## Tests
 
 To run the test suite, execute `pytest` in your virtual environment:
 
@@ -156,9 +156,9 @@ pytest
 
 ---
 
-## ⚖️ License & Disclaimers
+## License & Disclaimers
 
-This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License - see LICENSE for details.
 
 > [!WARNING]
-> This tool is developed strictly for **educational, cybersecurity research, and authorized investigative purposes**. Automated scraping of Instagram profiles without prior consent violates Meta's Terms of Service. Use responsibly.
+> This tool is developed strictly for educational, cybersecurity research, and authorized investigative purposes. Automated scraping of Instagram profiles without prior consent violates Meta's Terms of Service. Use responsibly.
