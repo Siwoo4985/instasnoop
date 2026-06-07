@@ -60,7 +60,17 @@ def scan(
             progress.update(task, description="[bold green]Scan complete![/bold green]")
         return scan_data
 
-    scan_result = asyncio.run(run_scan())
+    try:
+        scan_result = asyncio.run(run_scan())
+    except Exception as e:
+        console.print(Panel(
+            f"[bold red]Scan Failed:[/bold red] {str(e)}\n\n"
+            "[dim]Please check your network connection, username syntax, or session cookie validity.[/dim]",
+            title="[bold red]Error[/bold red]",
+            border_style="red"
+        ))
+        raise typer.Exit(code=1)
+        
     profile = scan_result.get("profile", {})
     parsed_intel = scan_result.get("parsed_intelligence", {})
     cp_results = scan_result.get("cross_platform_results", [])
@@ -106,21 +116,25 @@ def scan(
             border_style="green"
         ))
 
-    # 3. Print Cross-Platform Results
+    # 3. Print Cross-Platform Results in a dense 3-column table
     found_profiles = [r for r in cp_results if r.get("exists")]
-    cp_table = Table(title="[bold white]Cross-Platform Username Detection[/bold white]", box=None, show_header=True)
-    cp_table.add_column("Platform", style="bold cyan")
-    cp_table.add_column("Profile Link", style="underline dim")
-    cp_table.add_column("Status")
-
-    for fp in found_profiles:
-        cp_table.add_row(
-            fp["site"],
-            fp["url"],
-            "[bold green]FOUND[/bold green]"
-        )
-        
+    
     if found_profiles:
+        cp_table = Table(title="[bold white]Cross-Platform Username Detection (Matches Found)[/bold white]", show_header=True, border_style="cyan")
+        cp_table.add_column("Site 1", style="bold cyan")
+        cp_table.add_column("Link 1", style="underline dim")
+        cp_table.add_column("Site 2", style="bold cyan")
+        cp_table.add_column("Link 2", style="underline dim")
+        
+        # Chunk found profiles into pairs to make a dense 2-column wide table (reducing vertical space by half)
+        for i in range(0, len(found_profiles), 2):
+            p1 = found_profiles[i]
+            p2 = found_profiles[i+1] if i+1 < len(found_profiles) else {"site": "", "url": ""}
+            
+            cp_table.add_row(
+                p1["site"], p1["url"],
+                p2["site"], p2["url"]
+            )
         console.print(cp_table)
     else:
         console.print("[dim italic]No matching usernames found on the checked platforms.[/dim italic]\n")

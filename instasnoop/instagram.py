@@ -6,9 +6,10 @@ from typing import Dict, Any, Optional
 logger = logging.getLogger("instasnoop.instagram")
 
 class InstagramScanner:
-    def __init__(self, username: str, session_cookie: Optional[str] = None):
+    def __init__(self, username: str, session_cookie: Optional[str] = None, client: Optional[httpx.AsyncClient] = None):
         self.username = username.strip().lower().replace("@", "")
         self.session_cookie = session_cookie
+        self.client = client
 
     async def fetch_profile(self) -> Dict[str, Any]:
         """Tries to fetch the Instagram profile. First via cookie (if provided), then anon/simulation."""
@@ -38,36 +39,40 @@ class InstagramScanner:
         
         url = f"https://www.instagram.com/api/v1/users/web_profile_info/?username={self.username}"
         
-        async with httpx.AsyncClient() as client:
-            response = await client.get(url, headers=headers, timeout=10.0)
+        # Use shared client if available, else create one
+        if self.client:
+            response = await self.client.get(url, headers=headers, timeout=10.0)
+        else:
+            async with httpx.AsyncClient() as c:
+                response = await c.get(url, headers=headers, timeout=10.0)
             
-            if response.status_code == 200:
-                data = response.json()
-                user_data = data.get("data", {}).get("user", {})
-                if not user_data:
-                    raise ValueError("User not found or empty response data")
-                
-                return {
-                    "username": user_data.get("username", self.username),
-                    "full_name": user_data.get("full_name", ""),
-                    "biography": user_data.get("biography", ""),
-                    "follower_count": user_data.get("edge_followed_by", {}).get("count", 0),
-                    "following_count": user_data.get("edge_follow", {}).get("count", 0),
-                    "post_count": user_data.get("edge_owner_to_timeline_media", {}).get("count", 0),
-                    "profile_pic_url": user_data.get("profile_pic_url_hd", user_data.get("profile_pic_url", "")),
-                    "external_url": user_data.get("external_url", ""),
-                    "is_private": user_data.get("is_private", False),
-                    "is_verified": user_data.get("is_verified", False),
-                    "simulated": False
-                }
-            elif response.status_code == 404:
-                raise ValueError(f"User '{self.username}' not found on Instagram (404)")
-            else:
-                raise httpx.HTTPStatusError(
-                    f"HTTP error {response.status_code} from Instagram API",
-                    request=response.request,
-                    response=response
-                )
+        if response.status_code == 200:
+            data = response.json()
+            user_data = data.get("data", {}).get("user", {})
+            if not user_data:
+                raise ValueError("User not found or empty response data")
+            
+            return {
+                "username": user_data.get("username", self.username),
+                "full_name": user_data.get("full_name", ""),
+                "biography": user_data.get("biography", ""),
+                "follower_count": user_data.get("edge_followed_by", {}).get("count", 0),
+                "following_count": user_data.get("edge_follow", {}).get("count", 0),
+                "post_count": user_data.get("edge_owner_to_timeline_media", {}).get("count", 0),
+                "profile_pic_url": user_data.get("profile_pic_url_hd", user_data.get("profile_pic_url", "")),
+                "external_url": user_data.get("external_url", ""),
+                "is_private": user_data.get("is_private", False),
+                "is_verified": user_data.get("is_verified", False),
+                "simulated": False
+            }
+        elif response.status_code == 404:
+            raise ValueError(f"User '{self.username}' not found on Instagram (404)")
+        else:
+            raise httpx.HTTPStatusError(
+                f"HTTP error {response.status_code} from Instagram API",
+                request=response.request,
+                response=response
+            )
 
     async def fetch_profile_anon(self) -> Dict[str, Any]:
         """

@@ -1,10 +1,11 @@
 import asyncio
 import httpx
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 class CrossPlatformScanner:
-    def __init__(self, username: str):
+    def __init__(self, username: str, client: Optional[httpx.AsyncClient] = None):
         self.username = username.strip().replace("@", "")
+        self.client = client
         # Standard list of platforms and URL templates for checking existence
         self.platforms = {
             "GitHub": "https://github.com/{}",
@@ -40,8 +41,8 @@ class CrossPlatformScanner:
             "PyPI": "https://pypi.org/user/{}"
         }
 
-    async def check_site(self, client: httpx.AsyncClient, site: str, url_template: str) -> Dict[str, Any]:
-        """Checks if a user profile exists on a specific site."""
+    async def check_site(self, client: httpx.AsyncClient, semaphore: asyncio.Semaphore, site: str, url_template: str) -> Dict[str, Any]:
+        """Checks if a user profile exists on a specific site under a semaphore lock."""
         url = url_template.format(self.username)
         headers = {
             "User-Agent": (
@@ -53,62 +54,79 @@ class CrossPlatformScanner:
             "Accept-Language": "en-US,en;q=0.5"
         }
         
-        try:
-            # Most sites return 404 if user doesn't exist.
-            # Some sites (like TikTok) are heavily protected, but a 200 or 404 is still standard.
-            # Using HEAD request is faster, but some sites require GET or block HEAD.
-            # We'll use GET but limit the response read size to save bandwidth/time.
-            response = await client.get(url, headers=headers, follow_redirects=True, timeout=5.0)
-            
-            # Custom logic for specific sites that return 200 but might not contain the user
-            exists = False
-            status_code = response.status_code
-            
-            if status_code == 200:
-                exists = True
-                content = response.text.lower()
+        async with semaphore:
+            try:
+                # Add a micro delay to jitter/stagger requests slightly
+                await asyncio.sleep(0.05)
+                response = await client.get(url, headers=headers, follow_redirects=True, timeout=5.0)
                 
-                # Check for common "not found" indicators in HTML content
-                not_found_keywords = [
-                    "page not found", "user not found", "profile not found",
-                    "isn't available", "doesn't exist", "cannot find", 
-                    "error-404", "404 not found", "404 - page not found"
-                ]
+                exists = False
+                status_code = response.status_code
+                status_label = "NOT_FOUND"
                 
-                if any(kw in content for kw in not_found_keywords):
+                if status_code == 200:
+                    exists = True
+                    status_label = "FOUND"
+                    content = response.text.lower()
+                    
+                    # Check for common "not found" indicators in HTML content
+                    not_found_keywords = [
+                        "page not found", "user not found", "profile not found",
+                        "isn't available", "doesn't exist", "cannot find", 
+                        "error-404", "404 not found", "404 - page not found"
+                    ]
+                    
+                    if any(kw in content for kw in not_found_keywords):
+                        exists = False
+                        status_label = "NOT_FOUND"
+                
+                elif status_code == 404:
                     exists = False
-            
-            elif status_code == 404:
-                exists = False
-            else:
-                # Other status codes (like 403, 429) might mean protected or rate-limited.
-                # In OSINT, we usually treat these as inconclusive or false.
-                exists = False
-                
-            return {
-                "site": site,
-                "url": url,
-                "exists": exists,
-                "status_code": status_code
-            }
-        except httpx.HTTPError:
-            # Connection errors, timeouts, etc.
-            return {
-                "site": site,
-                "url": url,
-                "exists": False,
-                "status_code": 0,
-                "error": "Connection Timeout/Error"
-            }
+                    status_label = "NOT_FOUND"
+                elif status_code in (403, 401):
+                    exists = False
+                    status_label = "BLOCKED/FORBIDDEN"
+                elif status_code == 429:
+                    exists = False
+                    status_label = "RATE_LIMITED"
+                else:
+                    exists = False
+                    status_label = f"HTTP_{status_code}"
+                    
+                return {
+                    "site": site,
+                    "url": url,
+                    "exists": exists,
+                    "status_code": status_code,
+                    "status_label": status_label
+                }
+            except httpx.HTTPError as e:
+                return {
+                    "site": site,
+                    "url": url,
+                    "exists": False,
+                    "status_code": 0,
+                    "status_label": "ERROR",
+                    "error": str(e)
+                }
 
     async def scan_all(self) -> List[Dict[str, Any]]:
-        """Scans all platforms concurrently."""
-        limits = httpx.Limits(max_keepalive_connections=10, max_connections=30)
-        async with httpx.AsyncClient(limits=limits) as client:
+        """Scans all platforms concurrently with throttled concurrency."""
+        semaphore = asyncio.Semaphore(10)
+        
+        if self.client:
             tasks = [
-                self.check_site(client, site, template)
+                self.check_site(self.client, semaphore, site, template)
                 for site, template in self.platforms.items()
             ]
             results = await asyncio.gather(*tasks)
-            # Sort results alphabetically by site name
-            return sorted(results, key=lambda x: x["site"])
+        else:
+            limits = httpx.Limits(max_keepalive_connections=10, max_connections=30)
+            async with httpx.AsyncClient(limits=limits) as client:
+                tasks = [
+                    self.check_site(client, semaphore, site, template)
+                    for site, template in self.platforms.items()
+                ]
+                results = await asyncio.gather(*tasks)
+                
+        return sorted(results, key=lambda x: x["site"])

@@ -1,7 +1,7 @@
 import os
 import json
 from datetime import datetime
-from jinja2 import Template
+from jinja2 import Environment, select_autoescape, FileSystemLoader
 
 class ReportGenerator:
     def __init__(self, username: str):
@@ -14,7 +14,7 @@ class ReportGenerator:
             json.dump(data, f, indent=4, ensure_ascii=False)
 
     def generate_html_report(self, data: dict, output_path: str) -> None:
-        """Generates a self-contained, premium responsive HTML dashboard."""
+        """Generates a self-contained, premium responsive HTML dashboard with security and print styling."""
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         
         # Calculate stats for the summary card
@@ -32,7 +32,7 @@ class ReportGenerator:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InstaSnoop OSINT Report: @{{ username }}</title>
+    <title>InstaSnoop OSINT Report: @{{ username | e }}</title>
     <!-- Google Fonts Outfit & JetBrains Mono -->
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <!-- FontAwesome CDN for premium icons -->
@@ -325,6 +325,7 @@ class ReportGenerator:
             border-radius: 10px;
             margin-bottom: 0.75rem;
             font-size: 0.9rem;
+            position: relative;
         }
 
         .intel-item i {
@@ -337,6 +338,23 @@ class ReportGenerator:
         .intel-item .value {
             font-family: var(--font-mono);
             word-break: break-all;
+            flex-grow: 1;
+        }
+
+        /* Copy Button styling */
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.2rem;
+            margin-left: 0.5rem;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: var(--accent-cyan);
         }
 
         .empty-text {
@@ -354,6 +372,7 @@ class ReportGenerator:
             align-items: center;
             margin-bottom: 1rem;
             gap: 1rem;
+            flex-wrap: wrap;
         }
 
         .search-bar {
@@ -509,12 +528,157 @@ class ReportGenerator:
             transform: translateY(-1px);
         }
 
+        /* Custom toggle switch for found only */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .toggle-container input {
+            cursor: pointer;
+        }
+
         @media (max-width: 900px) {
             .card-profile, .card-stats, .card-intel, .card-crossplatform {
                 grid-column: span 12;
             }
             body {
                 padding: 1rem;
+            }
+        }
+
+        /* Print Override Stylesheet */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+                padding: 0 !important;
+                font-size: 11pt;
+            }
+            
+            .ambient-glow-1,
+            .ambient-glow-2,
+            .print-btn,
+            .cp-controls,
+            .copy-btn,
+            .simulated-warning {
+                display: none !important;
+            }
+
+            header {
+                border-bottom: 2px solid #333 !important;
+                margin-bottom: 2rem !important;
+                padding-bottom: 0.5rem !important;
+            }
+
+            .logo {
+                background: none !important;
+                -webkit-text-fill-color: black !important;
+                color: black !important;
+            }
+
+            .logo i {
+                color: black !important;
+            }
+
+            .meta-info {
+                color: #333 !important;
+            }
+
+            .bento-grid {
+                display: block !important;
+            }
+
+            .glass-card {
+                background: white !important;
+                border: 1px solid #ddd !important;
+                border-radius: 12px !important;
+                padding: 1.5rem !important;
+                box-shadow: none !important;
+                color: black !important;
+                margin-bottom: 1.5rem !important;
+                page-break-inside: avoid;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+
+            .profile-bio {
+                background: #f9f9f9 !important;
+                border: 1px solid #eee !important;
+                color: #333 !important;
+            }
+
+            .stat-box {
+                background: #f9f9f9 !important;
+                border: 1px solid #eee !important;
+            }
+
+            .stat-value {
+                color: black !important;
+            }
+
+            .stat-label {
+                color: #555 !important;
+            }
+
+            .intel-item {
+                background: #f9f9f9 !important;
+                border: 1px solid #eee !important;
+            }
+
+            .intel-item i {
+                color: #333 !important;
+            }
+
+            .cp-grid {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 0.5rem !important;
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            .cp-badge {
+                border: 1px solid #ccc !important;
+                background: white !important;
+                color: black !important;
+                padding: 0.4rem 0.6rem !important;
+            }
+
+            .cp-badge.not-found {
+                display: none !important; /* Hide non-existent platforms in print to save space */
+            }
+
+            .badge-status.found {
+                background: none !important;
+                color: #0f766e !important;
+                font-weight: bold !important;
+            }
+
+            .dorks-list {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            .dork-item {
+                border: 1px solid #eee !important;
+                background: #f9f9f9 !important;
+            }
+
+            .dork-title {
+                color: #0369a1 !important;
+            }
+
+            .dork-link {
+                color: #555 !important;
+            }
+
+            .dork-snippet {
+                color: #333 !important;
             }
         }
     </style>
@@ -534,8 +698,8 @@ class ReportGenerator:
                     <i class="fa-solid fa-file-pdf"></i> Save / Print PDF
                 </button>
                 <div class="meta-info">
-                    <div>Target: @{{ username }}</div>
-                    <div>Generated: {{ date_str }}</div>
+                    <div>Target: @{{ username | e }}</div>
+                    <div>Generated: {{ date_str | e }}</div>
                 </div>
             </div>
         </header>
@@ -548,18 +712,18 @@ class ReportGenerator:
                     <i class="fa-solid fa-address-card"></i> Instagram Profile
                 </div>
                 <div class="profile-header">
-                    <img src="{{ profile.profile_pic_url or 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200' }}" alt="avatar" class="avatar">
+                    <img src="{{ profile.profile_pic_url | e or 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200' }}" alt="avatar" class="avatar">
                     <div class="profile-title">
-                        <h2>{{ profile.full_name or username }}
+                        <h2>{{ profile.full_name | e or username | e }}
                             {% if profile.is_verified %}
                                 <i class="fa-solid fa-circle-check badge-verified"></i>
                             {% endif %}
                         </h2>
-                        <div class="profile-handle">@{{ username }}</div>
+                        <div class="profile-handle">@{{ username | e }}</div>
                     </div>
                 </div>
                 <div class="profile-bio">
-                    {{ profile.biography or "No biography provided." }}
+                    {{ profile.biography | e or "No biography provided." }}
                 </div>
                 
                 {% if profile.simulated %}
@@ -578,15 +742,15 @@ class ReportGenerator:
                 
                 <div class="stat-grid">
                     <div class="stat-box">
-                        <div class="stat-value">{{ "{:,}".format(profile.follower_count) if profile.follower_count is defined else "0" }}</div>
+                        <div class="stat-value">{{ "{:,}".format(profile.follower_count | default(0) | int) }}</div>
                         <div class="stat-label">Followers</div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-value">{{ "{:,}".format(profile.following_count) if profile.following_count is defined else "0" }}</div>
+                        <div class="stat-value">{{ "{:,}".format(profile.following_count | default(0) | int) }}</div>
                         <div class="stat-label">Following</div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-value">{{ "{:,}".format(profile.post_count) if profile.post_count is defined else "0" }}</div>
+                        <div class="stat-value">{{ "{:,}".format(profile.post_count | default(0) | int) }}</div>
                         <div class="stat-label">Posts</div>
                     </div>
                 </div>
@@ -603,7 +767,8 @@ class ReportGenerator:
                     <div class="intel-item">
                         <i class="fa-solid fa-link"></i>
                         <span>External Link:</span>
-                        <a href="{{ profile.external_url }}" target="_blank" class="value" style="margin-left: auto; color: var(--accent-cyan);">{{ profile.external_url }}</a>
+                        <a href="{{ profile.external_url | e }}" target="_blank" class="value" style="margin-left: auto; color: var(--accent-cyan);">{{ profile.external_url | e }}</a>
+                        <button class="copy-btn" onclick="copyToClipboard('{{ profile.external_url | e }}')" title="Copy URL"><i class="fa-regular fa-copy"></i></button>
                     </div>
                     {% endif %}
                 </div>
@@ -622,22 +787,25 @@ class ReportGenerator:
                         {% for email in parsed_intel.emails %}
                         <li class="intel-item">
                             <i class="fa-solid fa-envelope"></i>
-                            <span class="value">{{ email }}</span>
+                            <span class="value">{{ email | e }}</span>
+                            <button class="copy-btn" onclick="copyToClipboard('{{ email | e }}')" title="Copy Email"><i class="fa-regular fa-copy"></i></button>
                         </li>
                         {% endfor %}
                         
                         {% for phone in parsed_intel.phones %}
                         <li class="intel-item">
                             <i class="fa-solid fa-phone"></i>
-                            <span class="value">{{ phone }}</span>
+                            <span class="value">{{ phone | e }}</span>
+                            <button class="copy-btn" onclick="copyToClipboard('{{ phone | e }}')" title="Copy Phone"><i class="fa-regular fa-copy"></i></button>
                         </li>
                         {% endfor %}
 
                         {% for social in parsed_intel.socials %}
                         <li class="intel-item">
                             <i class="fa-solid fa-hashtag"></i>
-                            <span>{{ social.platform }}:</span>
-                            <span class="value" style="margin-left: auto; color: var(--accent-cyan);">@{{ social.handle }}</span>
+                            <span>{{ social.platform | e }}:</span>
+                            <span class="value" style="margin-left: auto; color: var(--accent-cyan);">@{{ social.handle | e }}</span>
+                            <button class="copy-btn" onclick="copyToClipboard('@{{ social.handle | e }}')" title="Copy Handle"><i class="fa-regular fa-copy"></i></button>
                         </li>
                         {% endfor %}
                     </ul>
@@ -651,16 +819,20 @@ class ReportGenerator:
                 </div>
                 <div class="cp-controls">
                     <div style="font-size: 0.9rem; color: var(--text-secondary);">
-                        Matches Found: <strong style="color: var(--accent-emerald);">{{ found_platforms|length }}</strong> / {{ total_platforms }} platforms checked
+                        Matches Found: <strong style="color: var(--accent-emerald);" id="matchCounter">{{ found_platforms|length }}</strong> / {{ total_platforms }} platforms checked
                     </div>
+                    <label class="toggle-container">
+                        <input type="checkbox" id="showFoundOnly" onchange="filterPlatforms()"> Hide N/A Platforms
+                    </label>
                     <input type="text" id="platformSearch" class="search-bar" placeholder="Filter platforms..." oninput="filterPlatforms()">
                 </div>
                 <div class="cp-grid" id="cpGrid">
                     {% for result in cp_results %}
-                        <a href="{{ result.url }}" target="_blank" 
+                        <a href="{{ result.url | e }}" target="_blank" 
                            class="cp-badge {% if result.exists %}found{% else %}not-found{% endif %}" 
-                           data-name="{{ result.site|lower }}">
-                            <span>{{ result.site }}</span>
+                           data-name="{{ result.site | lower | e }}"
+                           data-exists="{{ 'true' if result.exists else 'false' }}">
+                            <span>{{ result.site | e }}</span>
                             {% if result.exists %}
                                 <span class="badge-status found">found</span>
                             {% else %}
@@ -679,9 +851,9 @@ class ReportGenerator:
                 <div class="dorks-list">
                     {% for dork in dorks %}
                     <div class="dork-item">
-                        <a href="{{ dork.link }}" target="_blank" class="dork-title">{{ dork.title }}</a>
-                        <div class="dork-link">{{ dork.link }}</div>
-                        <div class="dork-snippet">{{ dork.snippet }}</div>
+                        <a href="{{ dork.link | e }}" target="_blank" class="dork-title">{{ dork.title | e }}</a>
+                        <div class="dork-link">{{ dork.link | e }}</div>
+                        <div class="dork-snippet">{{ dork.snippet | e }}</div>
                     </div>
                     {% endfor %}
                 </div>
@@ -692,15 +864,39 @@ class ReportGenerator:
     <script>
         function filterPlatforms() {
             const query = document.getElementById('platformSearch').value.toLowerCase();
+            const showFoundOnly = document.getElementById('showFoundOnly').checked;
             const badges = document.querySelectorAll('.cp-badge');
+            let visibleCount = 0;
             
             badges.forEach(badge => {
                 const name = badge.getAttribute('data-name');
-                if (name.includes(query)) {
+                const exists = badge.getAttribute('data-exists') === 'true';
+                
+                const matchesQuery = name.includes(query);
+                const matchesToggle = !showFoundOnly || exists;
+                
+                if (matchesQuery && matchesToggle) {
                     badge.style.display = 'flex';
+                    if (exists) visibleCount++;
                 } else {
                     badge.style.display = 'none';
                 }
+            });
+            
+            document.getElementById('matchCounter').innerText = visibleCount;
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                // Temporary feedback on icon
+                const btn = event.currentTarget;
+                const origHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check" style="color: var(--accent-emerald);"></i>';
+                setTimeout(() => {
+                    btn.innerHTML = origHtml;
+                }, 1500);
+            }, function(err) {
+                console.error('Could not copy text: ', err);
             });
         }
     </script>
@@ -708,9 +904,12 @@ class ReportGenerator:
 </html>
 """
         
-        # Compile and render
+        # Compile and render using Jinja environment with autoescape enabled
+        env = Environment(
+            autoescape=select_autoescape(['html', 'xml'])
+        )
         date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        template = Template(template_str)
+        template = env.from_string(template_str)
         html_content = template.render(
             username=self.username,
             profile=profile,

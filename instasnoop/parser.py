@@ -22,7 +22,7 @@ class EntityParser:
             "Snapchat": re.compile(r'(?:snapchat\.add|snapchat\.com/add)/([a-zA-Z0-9._-]+)', re.IGNORECASE),
             "Kakao": re.compile(r'(?:kakao|open\.kakao\.com/o/)([a-zA-Z0-9_-]+)', re.IGNORECASE),
             "Line": re.compile(r'(?:line\.me/ti/p/|line\.me/R/ti/g/)([a-zA-Z0-9_-]+)', re.IGNORECASE),
-            "Mention": re.compile(r'@([a-zA-Z0-9_.]+)')
+            "Mention": re.compile(r'(?<![a-zA-Z0-9._%+-])@([a-zA-Z0-9_.]+)')
         }
 
     def extract_emails(self, text: str) -> List[str]:
@@ -30,11 +30,14 @@ class EntityParser:
         return list(set(self.email_pattern.findall(text)))
 
     def extract_phones(self, text: str) -> List[str]:
-        """Extracts phone numbers from text."""
-        # Clean up some false positives (like long version numbers or simple date strings)
+        """Extracts phone numbers from text, filtering out standard dates."""
         raw_matches = self.phone_pattern.findall(text)
         cleaned_matches = []
         for m in raw_matches:
+            # Skip if it matches a date pattern YYYY-MM-DD, YYYY.MM.DD, or YYYY/MM/DD
+            if re.match(r'^\d{4}[-./]\d{2}[-./]\d{2}$', m.strip()):
+                continue
+            
             # Must contain at least 7 digits to be a phone number
             digits = re.sub(r'\D', '', m)
             if len(digits) >= 7 and len(digits) <= 15:
